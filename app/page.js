@@ -4,6 +4,8 @@ import React from 'react'
 import { useState, useEffect } from 'react'
 import {ethers} from "ethers";
 
+import Image from "next/image"
+
 import raffleabi from "../utils/raffleAbi"
 import erc721abi from "../utils/erc721abi"
 
@@ -20,7 +22,7 @@ const RaffleDashBoard = () => {
 
 const RaffleComp = ({number}) => {
 
-  const raffleAdd = "0xC1150EF9d26d6686bA8e90340171662955d82493";
+  const raffleAdd = "0x8d9d534F38b26108811421835294384697b40126";
 
     const[contractAdd, setContractAdd] = useState("");
     const[tokenId, setTokenId] = useState(null);
@@ -28,9 +30,12 @@ const RaffleComp = ({number}) => {
     const [allowedTickets, setAllowedTickets] = useState(null);
     const [guacCost, setGuacCost] = useState(null);
 
+    const [winner, setWinner] = useState("");
+
     const [name, setName] = useState("");
     const [image, setImage] = useState("");
-
+    const [ticketsSold, setTicketsSold] = useState(0);
+    const [entrants, setEntrants] = useState(0);
     const [itemExists, setItemExists] = useState(false);
 
     function handleContractAddress(e){
@@ -60,6 +65,7 @@ function handleGuacCost(e){
 
       try {
       const contract = new ethers.Contract(raffleAdd, raffleabi, signer);
+      console.log("raffle", raffleAdd);
       return contract;
       }
       catch(err){
@@ -79,12 +85,52 @@ function handleGuacCost(e){
 
     async function setERC721Contract(){
       try{
-        let abi = erc721abi;
+
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
-        const contract = new ethers.Contract(contractAdd, abi, signer);
 
-        return contract;
+        const contract1 = new ethers.Contract(raffleAdd, raffleabi, signer);
+        const address = await contract1?.raffleContract(number);
+        console.log(address);
+        if(address.toUpperCase() == "0X0000000000000000000000000000000000000000"){
+          const contract = new ethers.Contract(contractAdd, erc721abi, signer);
+          return contract
+        }
+
+        else{
+          const contract = new ethers.Contract(address, erc721abi, signer)
+          return contract;
+
+        }
+      }
+      catch(err){
+        console.log(err);
+      }
+    }
+
+    async function deleteRaffle(){
+      try{
+        const contract = await raffleContract();
+        console.log(number);
+        contract.deleteRaffle(number);
+
+      }
+      catch(err){
+        console.log(err);
+      }
+    }
+
+    async function declareWinner(number){
+      try{
+        const contract = await raffleContract();
+
+        if(await contract?.totalEntrants > 0){
+
+          const winner = contract?.declareWinner(number);
+          winner.wait();  
+  
+          setWinner(contract?.winningAddress(number));
+        }
       }
       catch(err){
         console.log(err);
@@ -94,11 +140,15 @@ function handleGuacCost(e){
     async function checkRaffleItem(number){
       try{
         const contract1 = await raffleContract();
-        console.log(number);
+        console.log(contract1);
+
         const limit = Number(await contract1?.ticketLimitPerWallet(number));
         if(limit != 0){
           setItemExists(true);
+          
           const contract2 = await setERC721Contract();
+          console.log(contract2);
+          setWinner(await contract1.winningAddress(number));
           const tokenId = Number(await contract1?.raffleTokenId(number)) ;
           const tokenURI = await contract2.tokenURI(tokenId);
 
@@ -108,7 +158,9 @@ function handleGuacCost(e){
           const name = json["name"];
           const image = json["image"];
           const newimage = `https://ipfs.io/ipfs/${image.substr(7)}`
-
+          console.log(newimage);
+          setTicketsSold(Number(await contract1?.ticketsSold(number)));
+          setEntrants(Number(await contract1?.totalEntrants(number)));
           setName(name);
           setImage(newimage);
         }
@@ -120,11 +172,11 @@ function handleGuacCost(e){
     }
 
 
-    async function approval(number){
+    async function approval(){
 
         try {
         const contract = await setERC721Contract();
-        const approval = await contract?.approve("0x3Dc1642f53EE8546D2908ecD0D6A31e961f71E3D", tokenId);
+        const approval = await contract?.approve(raffleAdd, tokenId);
 
         approval.wait();
 
@@ -163,10 +215,19 @@ function handleGuacCost(e){
         <div className=' '>
             <h1 className='text-white text-2xl font-bold py-2 bg-red-500 px-6 rounded-t-xl w-fit mx-auto border-b-0 border-black border-2'>RAFFLE - {number}</h1>
             <div className='  bg-yellow-400 border-2 border-black rounded-xl p-5 w-full flex flex-col items-center justify-center '>
-          {itemExists ?<div>
 
-            <h1>{name}</h1>
-            <Image width={1920} height={1080} src={image}/>
+
+          {itemExists ?<div className='w-[100%] text-center'>
+
+            <Image width={1920} height={1080} className='w-[90%] mb-4 rounded-xl mx-auto' alt='Raffle Item' src={image}></Image>
+            <h2 className='text-black text-3xl'>{name}</h2>
+            <div>
+              <h2>Entrants: {entrants} </h2>
+              <h2>Tickets Sold: {ticketsSold}</h2>
+              <h2 className='text-sm'>{winner}</h2>
+              <button onClick={declareWinner} className='bg-blue-400 mx-2 text-white py-2 px-4 rounded-xl border-2 border-black my-2 text-[1.5rem]'>Declare Winner!</button>
+              <button onClick={deleteRaffle} className='bg-red-400 mx-2 text-white py-2 px-4 rounded-xl border-2 border-black my-2 text-[1.5rem]'>Delete Raffle</button>
+            </div>
 
           </div> :  <div>
             
@@ -197,9 +258,8 @@ function handleGuacCost(e){
                   </div>
               </div>
               <button onClick={()=>{
-                  console.log("contract:", contractAdd);
-                  console.log("tokenID:", tokenId);
-                  approval(number);
+                
+                  approval();
               }} className=' mt-5 font-bold hover transition-all scale-110 duration-300 cursor-pointer bg-lime-600 text-white px-4 py-2 rounded-full mx-auto border-2 border-black '>Set Raffle</button>
               
           </div>}
