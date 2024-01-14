@@ -22,7 +22,7 @@ const RaffleDashBoard = () => {
 
 const RaffleComp = ({number}) => {
 
-  const raffleAdd = "0x8d9d534F38b26108811421835294384697b40126";
+  const raffleAdd = "0xBEB2d52C8367c2223802AF82242Db0f61692650B";
 
     const[contractAdd, setContractAdd] = useState("");
     const[tokenId, setTokenId] = useState(null);
