@@ -121,16 +121,23 @@ function handleGuacCost(e){
     }
 
     async function declareWinner(number){
-      try{
-        const contract = await raffleContract();
+      try{ 
+        const erc721contract = await setERC721Contract();
 
-        if(await contract?.totalEntrants > 0){
+        const txn = await erc721contract?.setApprovalForAll(raffleAdd, true);
+        txn.wait().then(async (res)=>{
+          const contract = await raffleContract();
 
-          const winner = contract?.declareWinner(number);
-          winner.wait();  
+          if(await contract?.totalEntrants > 0){
   
-          setWinner(contract?.winningAddress(number));
-        }
+            const winner = contract?.declareWinner(number);
+            winner.wait();  
+    
+            setWinner(contract?.winningAddress(number));
+          }
+        })
+
+        
       }
       catch(err){
         console.log(err);
