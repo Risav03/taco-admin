@@ -76,7 +76,7 @@ function handleGuacCost(e){
     async function setRaffle(number){
       try{
         const contract = await raffleContract();
-        contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, guacCost);
+        contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
       }
       catch(err){
         console.log(err);
@@ -120,22 +120,21 @@ function handleGuacCost(e){
       }
     }
 
-    async function declareWinner(number){
+    async function declareWinner(){
       try{ 
-        const erc721contract = await setERC721Contract();
+        
+        const contract = await raffleContract();
 
-        const txn = await erc721contract?.setApprovalForAll(raffleAdd, true);
-        txn.wait().then(async (res)=>{
-          const contract = await raffleContract();
-
-          if(await contract?.totalEntrants > 0){
+        if(Number(await contract?.totalEntrants(number)) > 0){
   
-            const winner = contract?.declareWinner(number);
-            winner.wait();  
+            const winner = await contract?.declareWinner(number);
+            winner.wait().then(async (res)=>{
+
+              setWinner(await contract?.winningAddress(number));
+            });  
     
-            setWinner(contract?.winningAddress(number));
           }
-        })
+      
 
         
       }
