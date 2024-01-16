@@ -11,7 +11,7 @@ import erc721abi from "../utils/erc721abi"
 
 const RaffleDashBoard = () => {
   return (
-    <div className='w-[90%] mt-32 mx-auto grid grid-cols-4 gap-10 gap-y-10'>
+    <div className='w-[90%] mt-20 min-[1600px]:mt-32 mx-auto grid grid-cols-4 gap-6 min-[1600px]:gap-10'>
         <RaffleComp number={1}/>
         <RaffleComp number={2}/>
         <RaffleComp number={3}/>
