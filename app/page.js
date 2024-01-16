@@ -11,7 +11,7 @@ import erc721abi from "../utils/erc721abi"
 
 const RaffleDashBoard = () => {
   return (
-    <div className='w-[80%] mt-20 mx-auto grid grid-cols-2 gap-5 gap-y-10'>
+    <div className='w-[90%] mt-32 mx-auto grid grid-cols-4 gap-10 gap-y-10'>
         <RaffleComp number={1}/>
         <RaffleComp number={2}/>
         <RaffleComp number={3}/>
@@ -218,7 +218,7 @@ function handleGuacCost(e){
 
 
     return(
-        <div className=' '>
+        <div className="">
             <h1 className='text-white text-2xl font-bold py-2 bg-red-500 px-6 rounded-t-xl w-fit mx-auto border-b-0 border-black border-2'>RAFFLE - {number}</h1>
             <div className='  bg-yellow-400 border-2 border-black rounded-xl p-5 w-full flex flex-col items-center justify-center '>
 
