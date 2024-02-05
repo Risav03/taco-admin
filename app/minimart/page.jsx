@@ -18,7 +18,7 @@ const MinmartDashboard = () => {
   const[loading, setLoading] = useState(false);
 
 
-  const address = "0x7F02956863dA568A83610364B7425AE8418e0dFC"
+  const address = "0x9c998aE8f5D156B54163990DDcfE97da242A499B"
 
   async function minimartContractSetup() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -191,6 +191,33 @@ function handleTokenId(e){
 function handlePrice(e){
   setPrice(e.target.value);
 }
+async function unList(item) {
+  try {
+    setLoading(true);
+    const contract = await minimartContractSetup();
+    const resp = await contract.unListItem(item);
+
+    resp.wait().then(() => {
+      console.log(resp)
+      Swal.fire({
+        icon: "success",
+        title: "Item Unlisted",
+        showConfirmButton: false,
+        timer: 1500
+      }).then((res) => { window.location.reload() }); setLoading(false);
+    });
+  }
+  catch (err) {
+    setLoading(false);
+    console.log(err);
+    Swal.fire({
+      icon: "error",
+      title: "Couldn't Unlist Marketplace Items",
+      showConfirmButton: false,
+      timer: 1500
+    });
+  }
+}
 
 useEffect(()=>{
   displayListedNFTs()
@@ -233,7 +260,7 @@ useEffect(()=>{
               <div className="bg-red-400 w-60 px-5 -translate-y-24 shadow-2xl shadow-black/60 pt-28 border-4 border-black rounded-2xl">
                 <h1 className="text-black text-lg">{item.name}</h1>
                 <h1 className="text-black bg-yellow-400 border-2 py-2 rounded-2xl border-black">{item.price} $GUAC</h1>
-                {address.toLowerCase() === item.owner.toLowerCase() ? <button disabled={loading} onClick={() => { unList(item.i) }} className={`bg-red-500 py-2 text-2xl ${loading && " animate-spin "} px-5 my-3 rounded-2xl border-2 border-black hover:bg-red-600`}>Unlist</button> : <button onClick={() => { approve(item.price, item.i) }} className={`bg-blue-500 relative text-2xl py-2 px-5 my-3 ${loading && " animate-spin "} rounded-2xl border-2 border-black hover:bg-blue-600`}>Buy</button>}
+                <button disabled={loading} onClick={() => { unList(item.i) }} className={`bg-red-500 py-2 text-2xl ${loading && " animate-spin "} px-5 my-3 rounded-2xl border-2 border-black hover:bg-red-600`}>Unlist</button> 
               </div>
                 </div>
           ))}
