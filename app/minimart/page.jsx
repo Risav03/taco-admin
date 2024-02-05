@@ -59,7 +59,7 @@ const MinmartDashboard = () => {
         setLoading(false);
         Swal.fire({
           icon: "success",
-          title: "NFT has been listed for " + ethers.utils.formatEther(String(price)) + " $GUAC",
+          title: "NFT has been listed for " + String(price) + " $GUAC",
           showConfirmButton: false,
           timer: 1500
         }).then((res) => { window.location.reload() });
