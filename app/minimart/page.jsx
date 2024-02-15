@@ -16,7 +16,7 @@ const MinmartDashboard = () => {
   const[price, setPrice] = useState(null);
   const [displayNFT, setDisplayNFT] = useState([]);
   const[loading, setLoading] = useState(false);
-
+  const[errorNFTs, setErrorNFTs] = useState([]);
 
   const address = "0x9c998aE8f5D156B54163990DDcfE97da242A499B"
 
@@ -108,11 +108,13 @@ const MinmartDashboard = () => {
   async function displayListedNFTs() {
     try {
       // const contract = await setERC721Contract();
-      const arr = [];
+
       
       const minimartContract = await minimartContractSetup();
       
       const data = await minimartContract.fetchData();
+
+      console.log(data);
       
       for (let i = 0; i < data.length; i++) {
         
@@ -120,23 +122,37 @@ const MinmartDashboard = () => {
         
         const contractAdd = data[i][0];
         
+       
         if (contractAdd.toUpperCase() != "0X0000000000000000000000000000000000000000") {
           console.log("helloooooo", contractAdd);
           const tokenId = String(data[i][1]);
           const uri = await contract.tokenURI(tokenId);
           const metadata = "https://ipfs.io/ipfs/" + uri.substr(7);
-          const meta = await fetch(metadata);
-          const json = await meta.json();
-          const name = json["name"];
-          const img = "https://ipfs.io/ipfs/" + json["image"].substr(7);
-          const price = ethers.utils.formatEther(String(data[i][3]));
-          const owner = String(data[i][2]);
 
-          arr.push({ name, tokenId, img, price, owner, i });
+
+          try{
+            const meta = await fetch(metadata, {
+              signal: AbortSignal.timeout(2000)
+            });
+            const json = await meta.json();
+            const name = json["name"];
+            const img = "https://ipfs.io/ipfs/" + json["image"].substr(7);
+            const price = ethers.utils.formatEther(String(data[i][3]));
+            const owner = String(data[i][2]);
+  
+            setDisplayNFT(oldArray =>[...oldArray, { name, tokenId, img, price, owner, i }]);
+          }
+          catch(err){
+            console.log(err);
+            setErrorNFTs(oldArray=>[...oldArray,{tokenId, contractAdd, i}]);
+          }
+
+
+          
         }
       }
 
-      setDisplayNFT(arr);
+
     }
     catch(err){
       console.log(err);
@@ -249,6 +265,20 @@ useEffect(()=>{
       </div>
 
 
+       </div>
+
+       <div className='text-center text-3xl font-bold my-10'>
+        <h1>Faulty Lists: </h1>
+        <div className='flex flex-row flex-wrap mx-auto item-center justify-center'>
+
+          {errorNFTs.map((item)=>(
+            <div className='bg-red-400 p-4 rounded-3xl m-4 text-white w-[40%]'>
+              <h2 className='truncate'>{item.contractAdd}</h2>
+              <h2 className='text-2xl font-medium'>{item.tokenId}</h2>
+              <button disabled={loading} onClick={() => { unList(item.i) }} className={`bg-red-500 py-2 text-2xl ${loading && " animate-spin "} px-5 my-3 rounded-2xl border-2 border-black hover:bg-red-600`}>Unlist</button> 
+              </div>
+          ))}
+        </div>
        </div>
 
        <div className='mt-10'>
