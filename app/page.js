@@ -256,7 +256,7 @@ function handleGuacCost(e){
             <div>
               <h2>Entrants: {entrants} </h2>
               <h2>Tickets Sold: {ticketsSold}</h2>
-              <h2 className='text-sm'>{winner}</h2>
+              <h2 className='text-sm truncate'>{winner}</h2>
               <button onClick={declareWinner} className='bg-blue-400 mx-2 text-white py-2 px-4 rounded-xl border-2 border-black my-2 text-[1.5rem]'>Declare Winner!</button>
               <button onClick={deleteRaffle} className='bg-red-400 mx-2 text-white py-2 px-4 rounded-xl border-2 border-black my-2 text-[1.5rem]'>Delete Raffle</button>
             </div>
