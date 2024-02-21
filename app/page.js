@@ -158,17 +158,43 @@ function handleGuacCost(e){
           const tokenId = Number(await contract1?.raffleTokenId(number)) ;
           const tokenURI = await contract2.tokenURI(tokenId);
 
-          const metadata = `https://ipfs.io/ipfs/${tokenURI.substr(7)}`;
-          const meta = await fetch(metadata);
-          const json = await meta.json();
-          const name = json["name"];
-          const image = json["image"];
-          const newimage = `https://ipfs.io/ipfs/${image.substr(7)}`
-          console.log(newimage);
-          setTicketsSold(Number(await contract1?.ticketsSold(number)));
-          setEntrants(Number(await contract1?.totalEntrants(number)));
-          setName(name);
-          setImage(newimage);
+          if(tokenURI[0] == "h"){
+
+                    const metadata = tokenURI;
+
+                    const meta = await fetch(metadata);
+                    const json = await meta.json();
+                    const name = json["name"];
+                    const image = json["image"];
+                    const newimage = `https://ipfs.io/ipfs/${image.substr(7)}`
+    
+                    console.log(newimage);
+        
+                    setWinner(await contract1.winningAddress(number));
+                    setTicketsSold(Number(await contract1?.ticketsSold(number)));
+                    setEntrants(Number(await contract1?.totalEntrants(number)));
+                    setName(name);
+                    setImage(newimage);
+
+                }
+
+                else{
+                    const metadata = `https://ipfs.io/ipfs/${tokenURI.substr(7)}`;
+                    
+                    const meta = await fetch(metadata);
+                    const json = await meta.json();
+                    const name = json["name"];
+                    const image = json["image"];
+                    const newimage = `https://ipfs.io/ipfs/${image.substr(7)}`
+    
+                    console.log(newimage);
+        
+                    setWinner(await contract1.winningAddress(number));
+                    setTicketsSold(Number(await contract1?.ticketsSold(number)));
+                    setEntrants(Number(await contract1?.totalEntrants(number)));
+                    setName(name);
+                    setImage(newimage);
+                }
         }
 
       }
