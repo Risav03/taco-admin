@@ -6,13 +6,14 @@ import {ethers} from "ethers";
 
 import Image from "next/image"
 
-import raffleabi from "../utils/raffleAbi"
-import erc721abi from "../utils/erc721abi"
+import raffleabi from "../../utils/pearlRaffle"
+import erc721abi from "../../utils/erc721abi"
 
+import { InfinitySpin } from 'react-loader-spinner';
 
 const RaffleDashBoard = () => {
   return (
-    <div className='w-[90%] mt-20 min-[1600px]:mt-32 mx-auto grid grid-cols-4 gap-6 min-[1600px]:gap-10'>
+    <div className='w-[90%] mt-20 min-[1600px]:mt-32 mx-auto grid grid-cols-4  gap-6 min-[1600px]:gap-10'>
         <RaffleComp number={1}/>
         <RaffleComp number={2}/>
         <RaffleComp number={3}/>
@@ -23,7 +24,7 @@ const RaffleDashBoard = () => {
 
 const RaffleComp = ({number}) => {
 
-  const raffleAdd = "0xdF95f392628711E304b9d4a1bB8eEe6560b8e626";
+  const raffleAdd = "0xf6C4CE0C7B2251d5546A0F7dA2Ff5e318d380016";
 
     const[contractAdd, setContractAdd] = useState("");
     const[tokenId, setTokenId] = useState(null);
@@ -31,7 +32,7 @@ const RaffleComp = ({number}) => {
     const [allowedTickets, setAllowedTickets] = useState(null);
     const [guacCost, setGuacCost] = useState(null);
 
-    const [winner, setWinner] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const [name, setName] = useState("");
     const [image, setImage] = useState("");
@@ -77,9 +78,15 @@ function handleGuacCost(e){
     async function setRaffle(number){
       try{
         const contract = await raffleContract();
-        contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
+        const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
+
+        txn.wait().then((res)=>{
+            setLoading(false);
+            window.location.reload();
+        })
       }
       catch(err){
+        setLoading(false);
         console.log(err);
       }
     }
@@ -130,8 +137,7 @@ function handleGuacCost(e){
   
             const winner = await contract?.declareWinner(number);
             winner.wait().then(async (res)=>{
-
-              setWinner(await contract?.winningAddress(number));
+                window.location.reload();
             });  
     
           }
@@ -155,7 +161,7 @@ function handleGuacCost(e){
           
           const contract2 = await setERC721Contract();
           console.log(contract2);
-          setWinner(await contract1.winningAddress(number));
+
           const tokenId = Number(await contract1?.raffleTokenId(number)) ;
           const tokenURI = await contract2.tokenURI(tokenId);
 
@@ -171,7 +177,7 @@ function handleGuacCost(e){
     
                     console.log(newimage);
         
-                    setWinner(await contract1.winningAddress(number));
+
                     setTicketsSold(Number(await contract1?.ticketsSold(number)));
                     setEntrants(Number(await contract1?.totalEntrants(number)));
                     setName(name);
@@ -190,7 +196,7 @@ function handleGuacCost(e){
     
                     console.log(newimage);
         
-                    setWinner(await contract1.winningAddress(number));
+
                     setTicketsSold(Number(await contract1?.ticketsSold(number)));
                     setEntrants(Number(await contract1?.totalEntrants(number)));
                     setName(name);
@@ -200,6 +206,7 @@ function handleGuacCost(e){
 
       }
       catch(err){
+        setTimeout(()=>{checkRaffleItem(number)}, 1000);
         console.log(err);
       }
     }
@@ -208,17 +215,21 @@ function handleGuacCost(e){
     async function approval(){
 
         try {
+        setLoading(true);
         const contract = await setERC721Contract();
         const approval = await contract?.approve(raffleAdd, tokenId);
 
-        approval.wait();
+        approval.wait().then((res)=>{
+            setRaffle(number);
 
-        await setRaffle(number);
+        });
+
 
 
         }
         catch (err) {
         console.log("Error", err)
+        setLoading(false);
         //   Swal.fire({
         //     title: 'Error!',
         //     text: 'Couldn\'t get fetching contract',
@@ -247,7 +258,7 @@ function handleGuacCost(e){
     return(
         <div className="">
             <h1 className='text-white text-2xl font-bold py-2 bg-red-500 px-6 rounded-t-xl w-fit mx-auto border-b-0 border-black border-2'>RAFFLE - {number}</h1>
-            <div className='  bg-yellow-400 border-2 border-black rounded-xl p-5 w-full flex flex-col items-center justify-center '>
+            <div className='  bg-purple-400 border-2 border-black rounded-xl p-5 w-full flex flex-col items-center justify-center '>
 
 
           {itemExists ?<div className='w-[100%] text-center'>
@@ -257,7 +268,7 @@ function handleGuacCost(e){
             <div>
               <h2>Entrants: {entrants} </h2>
               <h2>Tickets Sold: {ticketsSold}</h2>
-              <h2 className='text-sm truncate'>{winner}</h2>
+
               <button onClick={declareWinner} className='bg-blue-400 mx-2 text-white py-2 px-4 rounded-xl border-2 border-black my-2 text-[1.5rem]'>Declare Winner!</button>
               <button onClick={deleteRaffle} className='bg-red-400 mx-2 text-white py-2 px-4 rounded-xl border-2 border-black my-2 text-[1.5rem]'>Delete Raffle</button>
             </div>
@@ -286,14 +297,15 @@ function handleGuacCost(e){
                   </div>
 
                   <div className='w-full'>
-                      <h3 className='text-black text-base font-bold'>$GUAC Cost per Ticket</h3>
+                      <h3 className='text-black text-base font-bold'>$PEARL Cost per Ticket</h3>
                       <input onChange={handleGuacCost} value={guacCost} type="text" className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
                   </div>
               </div>
-              <button onClick={()=>{
+              {loading ? <InfinitySpin className="mx-auto" visible={true} width="200" color="#ffffff" ariaLabel="infinity-spin-loading" /> :  <button onClick={()=>{
                 
-                  approval();
-              }} className=' mt-5 font-bold hover transition-all scale-110 duration-300 cursor-pointer bg-lime-600 text-white px-4 py-2 rounded-full mx-auto border-2 border-black '>Set Raffle</button>
+                approval();
+            }} className=' mt-5 font-bold hover transition-all scale-110 duration-300 cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-full mx-auto border-2 border-black '>Set Raffle</button>}
+             
               
           </div>}
             </div>
