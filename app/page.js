@@ -12,12 +12,80 @@ import raffleLinksabi from '@/utils/raffleLinksabi';
 
 
 const RaffleDashBoard = () => {
+
+  const raffleAdd = "0xdF95f392628711E304b9d4a1bB8eEe6560b8e626";
+  const raffleLinkAdd = "0x76C91D0D5ef5C438Cd16Dd40DbA86595D8c8A50B";
+
+  const[owner, setOwner] = useState("");
+
+
+    async function setLinkContract(){
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      const signer = provider.getSigner();
+
+      try {
+      const contract = new ethers.Contract(raffleLinkAdd, raffleLinksabi, signer);
+      console.log("raffle", raffleAdd);
+      return contract;
+      }
+      catch(err){
+        console.log(err);
+      }
+  }
+
+  async function raffleContract(){
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+  
+    const signer = provider.getSigner();
+  
+    try {
+    const contract = new ethers.Contract(raffleAdd, raffleabi, signer);
+    console.log("raffle", raffleAdd);
+    return contract;
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
+  async function changeOwner(){
+    try{
+      const contract = await setLinkContract();
+      const contract2 = await raffleContract();
+
+      const txn1 = await contract.transferOwnership(owner);
+      
+
+      txn1.wait().then(async(res)=>{
+        const txn2 = await contract2.transferOwnership(owner);
+
+        txn2.wait().then((res)=>{
+          window.location.reload();
+        })
+      })
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
+  function handleOwner(e){
+    setOwner(e.target.value);
+}
+
   return (
     <div className='w-[90%] mt-20 min-[1600px]:mt-32 mx-auto grid grid-cols-4 gap-6 min-[1600px]:gap-10'>
         <RaffleComp number={1}/>
         <RaffleComp number={2}/>
         <RaffleComp number={3}/>
         <RaffleComp number={4}/>
+
+        <div className='w-full'>
+            <h3 className='text-black text-lg font-bold'>Reset Ownership</h3>
+            <input onChange={handleOwner} value={owner} type="text" className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
+            <button onClick={changeOwner} className="bg-red-500 text-white border-2 border-black rounded-2xl px-4 py-3 mt-2">Change</button>
+        </div>
     </div>
   )
 }
@@ -104,10 +172,13 @@ async function setLinkContract(){
         const contract2 = await setLinkContract();
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
         contract2.setLink(link);
-        txn.wait().then((res)=>{
+        txn.wait().then(async(res)=>{
+          const txn2 = await contract2.setLink(link);
+          txn2.wait().then((res)=>{
             setLoading(false);
             window.location.reload();
-        })
+          })
+      })
       }
       catch(err){
         console.log(err);

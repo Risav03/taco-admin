@@ -14,35 +14,12 @@ import raffleLinksabi from '@/utils/raffleLinksabi';
 import { InfinitySpin } from 'react-loader-spinner';
 
 const RaffleDashBoard = () => {
-  return (
-    <div className='w-[90%] mt-20 min-[1600px]:mt-32 mx-auto grid grid-cols-4  gap-6 min-[1600px]:gap-10'>
-        <RaffleComp number={1}/>
-        <RaffleComp number={2}/>
-        <RaffleComp number={3}/>
-        <RaffleComp number={4}/>
-    </div>
-  )
-}
-
-const RaffleComp = ({number}) => {
 
   const raffleAdd = "0xf6C4CE0C7B2251d5546A0F7dA2Ff5e318d380016";
   const raffleLinkAdd = "0x3ba08DdE724B4e55255a659f5670B66c3acb3FA8"
 
-    const[contractAdd, setContractAdd] = useState("");
-    const[tokenId, setTokenId] = useState(null);
-    const [limitPerWallet, setLimitPerWallet] = useState(null);
-    const [allowedTickets, setAllowedTickets] = useState(null);
-    const [guacCost, setGuacCost] = useState(null);
+  const[owner, setOwner] = useState("");
 
-    const [loading, setLoading] = useState(false);
-
-    const [name, setName] = useState("");
-    const [image, setImage] = useState("");
-    const [ticketsSold, setTicketsSold] = useState(0);
-    const [entrants, setEntrants] = useState(0);
-    const [itemExists, setItemExists] = useState(false);
-    const [link, setLink] = useState("");
 
     async function setLinkContract(){
       const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -58,6 +35,100 @@ const RaffleComp = ({number}) => {
         console.log(err);
       }
   }
+
+  async function raffleContract(){
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+  
+    const signer = provider.getSigner();
+  
+    try {
+    const contract = new ethers.Contract(raffleAdd, raffleabi, signer);
+    console.log("raffle", raffleAdd);
+    return contract;
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
+  async function changeOwner(){
+    try{
+      const contract = await setLinkContract();
+      const contract2 = await raffleContract();
+
+      const txn1 = await contract.transferOwnership(owner);
+      
+
+      txn1.wait().then(async(res)=>{
+        const txn2 = await contract2.transferOwnership(owner);
+
+        txn2.wait().then((res)=>{
+          window.location.reload();
+        })
+      })
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
+  function handleOwner(e){
+    setOwner(e.target.value);
+}
+
+  return (
+    <div className='w-[90%] mt-20 min-[1600px]:mt-32 mx-auto grid grid-cols-4  gap-6 min-[1600px]:gap-10'>
+        <RaffleComp number={1}/>
+        <RaffleComp number={2}/>
+        <RaffleComp number={3}/>
+        <RaffleComp number={4}/>
+
+        <div className='w-full'>
+            <h3 className='text-black text-lg font-bold'>Reset Ownership</h3>
+            <input onChange={handleOwner} value={owner} type="text" className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
+            <button onClick={changeOwner} className="bg-red-500 text-white border-2 border-black rounded-2xl px-4 py-3 mt-2">Change</button>
+        </div>
+
+
+    </div>
+  )
+}
+
+const RaffleComp = ({number}) => {
+
+  const raffleAdd = "0xf6C4CE0C7B2251d5546A0F7dA2Ff5e318d380016";
+  const raffleLinkAdd = "0x3ba08DdE724B4e55255a659f5670B66c3acb3FA8"
+
+  async function setLinkContract(){
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const signer = provider.getSigner();
+
+    try {
+    const contract = new ethers.Contract(raffleLinkAdd, raffleLinksabi, signer);
+    console.log("raffle", raffleAdd);
+    return contract;
+    }
+    catch(err){
+      console.log(err);
+    }
+}
+
+
+    const[contractAdd, setContractAdd] = useState("");
+    const[tokenId, setTokenId] = useState(null);
+    const [limitPerWallet, setLimitPerWallet] = useState(null);
+    const [allowedTickets, setAllowedTickets] = useState(null);
+    const [guacCost, setGuacCost] = useState(null);
+
+    const [loading, setLoading] = useState(false);
+
+    const [name, setName] = useState("");
+    const [image, setImage] = useState("");
+    const [ticketsSold, setTicketsSold] = useState(0);
+    const [entrants, setEntrants] = useState(0);
+    const [itemExists, setItemExists] = useState(false);
+    const [link, setLink] = useState("");
 
     function handleContractAddress(e){
         setContractAdd(e.target.value);
@@ -103,10 +174,12 @@ function handleGuacCost(e){
         const contract = await raffleContract();
         const contract2 = await setLinkContract();
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
-        contract2.setLink(link);
-        txn.wait().then((res)=>{
-            setLoading(false);
-            window.location.reload();
+        txn.wait().then(async(res)=>{
+            const txn2 = await contract2.setLink(link);
+            txn2.wait().then((res)=>{
+              setLoading(false);
+              window.location.reload();
+            })
         })
       }
       catch(err){
