@@ -8,6 +8,7 @@ import Image from "next/image"
 
 import raffleabi from "../utils/raffleAbi"
 import erc721abi from "../utils/erc721abi"
+import raffleLinksabi from '@/utils/raffleLinksabi';
 
 
 const RaffleDashBoard = () => {
@@ -24,6 +25,8 @@ const RaffleDashBoard = () => {
 const RaffleComp = ({number}) => {
 
   const raffleAdd = "0xdF95f392628711E304b9d4a1bB8eEe6560b8e626";
+  const raffleLinkAdd = "0x76C91D0D5ef5C438Cd16Dd40DbA86595D8c8A50B";
+
 
     const[contractAdd, setContractAdd] = useState("");
     const[tokenId, setTokenId] = useState(null);
@@ -38,6 +41,8 @@ const RaffleComp = ({number}) => {
     const [ticketsSold, setTicketsSold] = useState(0);
     const [entrants, setEntrants] = useState(0);
     const [itemExists, setItemExists] = useState(false);
+    const [link, setLink] = useState("");
+
 
     function handleContractAddress(e){
         setContractAdd(e.target.value);
@@ -59,6 +64,33 @@ function handleGuacCost(e){
   setGuacCost(e.target.value);
 }
 
+function handleLink(e){
+  setLink(e.target.value);
+}
+
+async function setLinkContract(){
+  try{
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const contract1 = new ethers.Contract(raffleLinkAdd, raffleLinksabi, signer);
+      const add = await contract1?.raffleContract(number);
+      console.log(add);
+      if(add.toUpperCase() == "0X0000000000000000000000000000000000000000"){
+        const contract = new ethers.Contract(contractAdd, erc721abi, signer);
+        return contract
+      }
+
+      else{
+        const contract = new ethers.Contract(add, erc721abi, signer)
+        return contract;
+      }
+  }
+  catch(err){
+      console.log(err);
+  }
+}
+
     async function raffleContract(){
       const provider = new ethers.providers.Web3Provider(window.ethereum);
 
@@ -77,7 +109,13 @@ function handleGuacCost(e){
     async function setRaffle(number){
       try{
         const contract = await raffleContract();
-        contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
+        const contract2 = await setLinkContract();
+        const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
+        contract2.setLink(link);
+        txn.wait().then((res)=>{
+            setLoading(false);
+            window.location.reload();
+        })
       }
       catch(err){
         console.log(err);
@@ -288,6 +326,11 @@ function handleGuacCost(e){
                   <div className='w-full'>
                       <h3 className='text-black text-base font-bold'>$GUAC Cost per Ticket</h3>
                       <input onChange={handleGuacCost} value={guacCost} type="text" className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
+                  </div>
+
+                  <div className='w-full'>
+                      <h3 className='text-black text-base font-bold'>Collection Link</h3>
+                      <input onChange={handleLink} value={link} type="text" className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
                   </div>
               </div>
               <button onClick={()=>{
