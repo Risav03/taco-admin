@@ -69,26 +69,18 @@ function handleLink(e){
 }
 
 async function setLinkContract(){
-  try{
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+
       const signer = provider.getSigner();
 
-      const contract1 = new ethers.Contract(raffleLinkAdd, raffleLinksabi, signer);
-      const add = await contract1?.raffleContract(number);
-      console.log(add);
-      if(add.toUpperCase() == "0X0000000000000000000000000000000000000000"){
-        const contract = new ethers.Contract(contractAdd, erc721abi, signer);
-        return contract
+      try {
+      const contract = new ethers.Contract(raffleLinkAdd, raffleLinksabi, signer);
+      console.log("raffle", raffleAdd);
+      return contract;
       }
-
-      else{
-        const contract = new ethers.Contract(add, erc721abi, signer)
-        return contract;
+      catch(err){
+        console.log(err);
       }
-  }
-  catch(err){
-      console.log(err);
-  }
 }
 
     async function raffleContract(){
