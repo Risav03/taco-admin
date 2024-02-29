@@ -171,7 +171,7 @@ async function setLinkContract(){
         const contract = await raffleContract();
         const contract2 = await setLinkContract();
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
-        contract2.setLink(link);
+
         txn.wait().then(async(res)=>{
           const txn2 = await contract2.setLink(link);
           txn2.wait().then((res)=>{
