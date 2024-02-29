@@ -166,18 +166,29 @@ async function setLinkContract(){
       }
     }
 
+    async function setLink(){
+      try{
+        const contract = await setLinkContract();
+        const txn = await contract.setLink(link);
+
+        txn.wait().then(async(res)=>{
+          window.location.reload();
+      })
+      }
+      catch(err){
+        console.log(err);
+      }
+    }
+
     async function setRaffle(number){
       try{
         const contract = await raffleContract();
-        const contract2 = await setLinkContract();
+        
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
 
         txn.wait().then(async(res)=>{
-          const txn2 = await contract2.setLink(link);
-          txn2.wait().then((res)=>{
-            setLoading(false);
-            window.location.reload();
-          })
+          setLink();
+          
       })
       }
       catch(err){

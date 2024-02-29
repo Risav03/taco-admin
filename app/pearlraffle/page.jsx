@@ -51,20 +51,30 @@ const RaffleDashBoard = () => {
     }
   }
 
+  async function setLink(){
+    try{
+      const contract = await setLinkContract();
+      const txn = await contract.setLink(link);
+
+      txn.wait().then(async(res)=>{
+        window.location.reload();
+    })
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
   async function changeOwner(){
     try{
       const contract = await setLinkContract();
-      const contract2 = await raffleContract();
+
 
       const txn1 = await contract.transferOwnership(owner);
       
 
       txn1.wait().then(async(res)=>{
-        const txn2 = await contract2.transferOwnership(owner);
-
-        txn2.wait().then((res)=>{
-          window.location.reload();
-        })
+       setLink();
       })
     }
     catch(err){
