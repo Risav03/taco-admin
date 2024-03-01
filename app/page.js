@@ -34,6 +34,20 @@ const RaffleDashBoard = () => {
       }
   }
 
+  async function setRaffleOwner(){
+    try{
+      const contract = await raffleContract();
+      const txn = await contract.transferOwnership(owner);
+
+      txn.wait().then(async(res)=>{
+        window.location.reload();
+    })
+    }
+    catch(err){
+      console.log(err);
+    }
+  }
+
   async function raffleContract(){
     const provider = new ethers.providers.Web3Provider(window.ethereum);
   
@@ -52,17 +66,13 @@ const RaffleDashBoard = () => {
   async function changeOwner(){
     try{
       const contract = await setLinkContract();
-      const contract2 = await raffleContract();
+
 
       const txn1 = await contract.transferOwnership(owner);
       
 
-      txn1.wait().then(async(res)=>{
-        const txn2 = await contract2.transferOwnership(owner);
-
-        txn2.wait().then((res)=>{
-          window.location.reload();
-        })
+      txn1.wait().then((res)=>{
+        setRaffleOwner();
       })
     }
     catch(err){

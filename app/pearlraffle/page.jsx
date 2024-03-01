@@ -51,10 +51,10 @@ const RaffleDashBoard = () => {
     }
   }
 
-  async function setLink(){
+  async function setRaffleOwner(){
     try{
-      const contract = await setLinkContract();
-      const txn = await contract.setLink(link);
+      const contract = await raffleContract();
+      const txn = await contract.transferOwnership(owner);
 
       txn.wait().then(async(res)=>{
         window.location.reload();
@@ -74,7 +74,7 @@ const RaffleDashBoard = () => {
       
 
       txn1.wait().then(async(res)=>{
-       setLink();
+        setRaffleOwner();
       })
     }
     catch(err){
@@ -178,18 +178,28 @@ function handleGuacCost(e){
         console.log(err);
       }
     }
+    
+    async function setLink(){
+      try{
+        const contract = await setLinkContract();
+        const txn = await contract.setLink(link);
+
+        txn.wait().then(async(res)=>{
+          window.location.reload();
+      })
+      }
+      catch(err){
+        console.log(err);
+      }
+    }
 
     async function setRaffle(number){
       try{
         const contract = await raffleContract();
-        const contract2 = await setLinkContract();
+
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
-        txn.wait().then(async(res)=>{
-            const txn2 = await contract2.setLink(link);
-            txn2.wait().then((res)=>{
-              setLoading(false);
-              window.location.reload();
-            })
+        txn.wait().then((res)=>{
+          setLink();
         })
       }
       catch(err){
