@@ -176,10 +176,11 @@ async function setLinkContract(){
       }
     }
 
-    async function setLink(){
+    async function linkSetter(){
       try{
         const contract = await setLinkContract();
-        const txn = await contract.setLink(link);
+        console.log(link);
+        const txn = await contract.setLink(link, number);
 
         txn.wait().then(async(res)=>{
           window.location.reload();
@@ -190,14 +191,14 @@ async function setLinkContract(){
       }
     }
 
-    async function setRaffle(number){
+    async function setRaffle(){
       try{
         const contract = await raffleContract();
         
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
 
         txn.wait().then(async(res)=>{
-          setLink();
+          linkSetter();
           
       })
       }
@@ -333,9 +334,11 @@ async function setLinkContract(){
         const contract = await setERC721Contract();
         const approval = await contract?.approve(raffleAdd, tokenId);
 
-        approval.wait();
+        approval.wait().then((res)=>{
 
-        await setRaffle(number);
+          setRaffle();
+        });
+
 
 
         }

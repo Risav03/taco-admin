@@ -179,10 +179,10 @@ function handleGuacCost(e){
       }
     }
     
-    async function setLink(){
+    async function linkSetter(){
       try{
         const contract = await setLinkContract();
-        const txn = await contract.setLink(link);
+        const txn = await contract.setLink(link, number);
 
         txn.wait().then(async(res)=>{
           window.location.reload();
@@ -193,13 +193,13 @@ function handleGuacCost(e){
       }
     }
 
-    async function setRaffle(number){
+    async function setRaffle(){
       try{
         const contract = await raffleContract();
 
         const txn = await contract.setRaffleItem(number, contractAdd, limitPerWallet, tokenId, allowedTickets, ethers.utils.parseEther(String(guacCost)));
         txn.wait().then((res)=>{
-          setLink();
+          linkSetter();
         })
       }
       catch(err){
