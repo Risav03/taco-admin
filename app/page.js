@@ -3,7 +3,7 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
 import {ethers} from "ethers";
-
+import { InfinitySpin } from 'react-loader-spinner';
 import Image from "next/image"
 
 import raffleabi from "../utils/raffleAbi"
@@ -113,7 +113,7 @@ const RaffleComp = ({number}) => {
     const [guacCost, setGuacCost] = useState(null);
 
     const [winner, setWinner] = useState("");
-
+    const[loading, setLoading] = useState(false);
     const [name, setName] = useState("");
     const [image, setImage] = useState("");
     const [ticketsSold, setTicketsSold] = useState(0);
@@ -184,9 +184,11 @@ async function setLinkContract(){
 
         txn.wait().then(async(res)=>{
           window.location.reload();
+          setLoading(false);
       })
       }
       catch(err){
+        setLoading(false);
         console.log(err);
       }
     }
@@ -203,6 +205,7 @@ async function setLinkContract(){
       })
       }
       catch(err){
+        setLoading(false);
         console.log(err);
       }
     }
@@ -331,6 +334,7 @@ async function setLinkContract(){
     async function approval(){
 
         try {
+          setLoading(true);
         const contract = await setERC721Contract();
         const approval = await contract?.approve(raffleAdd, tokenId);
 
@@ -344,6 +348,7 @@ async function setLinkContract(){
         }
         catch (err) {
         console.log("Error", err)
+        setLoading(false);
         //   Swal.fire({
         //     title: 'Error!',
         //     text: 'Couldn\'t get fetching contract',
@@ -420,11 +425,10 @@ async function setLinkContract(){
                       <input onChange={handleLink} value={link} type="text" className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
                   </div>
               </div>
-              <button onClick={()=>{
+              {loading ? <InfinitySpin className="mx-auto" visible={true} width="200" color="#ffffff" ariaLabel="infinity-spin-loading" /> :  <button onClick={()=>{
                 
-                  approval();
-              }} className=' mt-5 font-bold hover transition-all scale-110 duration-300 cursor-pointer bg-lime-600 text-white px-4 py-2 rounded-full mx-auto border-2 border-black '>Set Raffle</button>
-              
+                approval();
+            }} className=' mt-5 font-bold hover transition-all scale-110 duration-300 cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-full mx-auto border-2 border-black '>Set Raffle</button>}
           </div>}
             </div>
 {}
