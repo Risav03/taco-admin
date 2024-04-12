@@ -15,7 +15,7 @@ import { InfinitySpin } from 'react-loader-spinner';
 
 const RaffleDashBoard = () => {
 
-  const raffleAdd = "0xf6C4CE0C7B2251d5546A0F7dA2Ff5e318d380016";
+  const raffleAdd = "0xFCaf7775060bA547bd902183F6b836b9E87bbA03";
   const raffleLinkAdd = "0x3ba08DdE724B4e55255a659f5670B66c3acb3FA8"
 
   const[owner, setOwner] = useState("");
@@ -106,7 +106,7 @@ const RaffleDashBoard = () => {
 
 const RaffleComp = ({number}) => {
 
-  const raffleAdd = "0xf6C4CE0C7B2251d5546A0F7dA2Ff5e318d380016";
+  const raffleAdd = "0xFCaf7775060bA547bd902183F6b836b9E87bbA03";
   const raffleLinkAdd = "0x3ba08DdE724B4e55255a659f5670B66c3acb3FA8"
 
   async function setLinkContract(){
