@@ -127,7 +127,7 @@ const MinmartDashboard = () => {
           console.log("helloooooo", contractAdd);
           const tokenId = String(data[i][1]);
           const uri = await contract.tokenURI(tokenId);
-          const metadata = "https://ipfs.io/ipfs/" + uri.substr(7);
+          const metadata = "https://cf-ipfs.com/ipfs/" + uri.substr(7);
 
 
           try{
