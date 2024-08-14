@@ -38,7 +38,7 @@ export default [
 				"type": "uint256"
 			}
 		],
-		"name": "enterRaffle",
+		"name": "enterGuacRaffle",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -47,6 +47,28 @@ export default [
 		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "OwnableInvalidOwner",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "OwnableUnauthorizedAccount",
+		"type": "error"
 	},
 	{
 		"anonymous": false,
@@ -92,6 +114,11 @@ export default [
 				"type": "uint256"
 			},
 			{
+				"internalType": "string",
+				"name": "link",
+				"type": "string"
+			},
+			{
 				"internalType": "uint256",
 				"name": "tokenId",
 				"type": "uint256"
@@ -103,7 +130,7 @@ export default [
 			},
 			{
 				"internalType": "uint256",
-				"name": "cost",
+				"name": "guacCost",
 				"type": "uint256"
 			}
 		],
@@ -126,6 +153,19 @@ export default [
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "activeRaffles",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -134,6 +174,51 @@ export default [
 			}
 		],
 		"name": "chooseWinner",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "collectionLink",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "endedRaffles",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "endRaffleIndex",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -170,7 +255,114 @@ export default [
 	},
 	{
 		"inputs": [],
-		"name": "guacToken",
+		"name": "fetchActiveRaffles",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "contractAdd",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "participants",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "sold",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "maxAllowed",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "owned",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "maxOwnAllowed",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "guacPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "collectionLink",
+						"type": "string"
+					},
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "wallet",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "tickets",
+								"type": "uint256"
+							}
+						],
+						"internalType": "struct walletHoldings[]",
+						"name": "holders",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct returnRaffle[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "fetchEndedRaffles",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "contractAdd",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "winner",
+						"type": "address"
+					}
+				],
+				"internalType": "struct endedRaffle[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "guac",
 		"outputs": [
 			{
 				"internalType": "contract IGUAC",
@@ -291,7 +483,7 @@ export default [
 				"type": "uint256"
 			}
 		],
-		"name": "raffleEntryCost",
+		"name": "raffleEntryGuacCost",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -311,6 +503,19 @@ export default [
 			}
 		],
 		"name": "raffleTokenId",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "randNonce",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -420,24 +625,5 @@ export default [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "winningAddress",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
 	}
-];
+]
