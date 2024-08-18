@@ -7,6 +7,7 @@ import erc721abi from '@/utils/erc721abi';
 import Image from "next/image"
 import Swal from"sweetalert2"
 import minimartabi from '@/utils/minimartabi';
+import axios from 'axios';
 
 const MinmartDashboard = () => {
 
@@ -16,7 +17,9 @@ const MinmartDashboard = () => {
   const[price, setPrice] = useState(null);
   const [displayNFT, setDisplayNFT] = useState([]);
   const[loading, setLoading] = useState(false);
-  const[errorNFTs, setErrorNFTs] = useState([]);
+  // const[errorNFTs, setErrorNFTs] = useState([]);
+  const[profileImg, setProfileImg] = useState(null)
+
 
   const address = "0x9c998aE8f5D156B54163990DDcfE97da242A499B"
 
@@ -52,8 +55,6 @@ const MinmartDashboard = () => {
   async function setMinimartItem() {
     try {
       const contract = await minimartContractSetup();
-
-
       const txn = await contract.setMinimartItem(contractAdd, tokenId, ethers.utils.parseEther(String(price)));
       txn.wait().then(() => {
         setLoading(false);
@@ -71,6 +72,44 @@ const MinmartDashboard = () => {
       console.log(err);
     }
   }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+
+        const formData = new FormData();
+
+        
+        if(profileImg){
+          const shit = contractAdd+tokenId
+          formData.append("profileImage", profileImg);
+          formData.append("index", shit);
+        }
+
+
+        const response = await axios.post('/api/imageUpload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        if (response.status !== 200) {
+            console.log("error");
+            return;
+        }
+
+        // Reset form fields
+        if(response.status == 200){
+            approval();
+        }
+
+        // alert("Collection created successfully!");
+    } catch (error) {
+      setLoading(false);
+        console.log(error);
+    }
+}
 
   async function setERC721(contractAdd) {
     try {
@@ -126,17 +165,16 @@ const MinmartDashboard = () => {
         if (contractAdd.toUpperCase() != "0X0000000000000000000000000000000000000000") {
           console.log("helloooooo", contractAdd);
           const tokenId = String(data[i][1]);
-          const uri = await contract.tokenURI(tokenId);
-          const metadata = "https://cf-ipfs.com/ipfs/" + uri.substr(7);
+          const nameFirst = await contract.name();
+          
 
 
           try{
-            const meta = await fetch(metadata, {
-              signal: AbortSignal.timeout(2000)
-            });
-            const json = await meta.json();
-            const name = json["name"];
-            const img = "https://ipfs.io/ipfs/" + json["image"].substr(7);
+            
+
+            const name = nameFirst+ " #"+tokenId;
+            const img = "https://tacotribe.s3.ap-south-1.amazonaws.com/raffles/"+contractAdd.toLowerCase()+tokenId;
+            console.log(img);
             const price = ethers.utils.formatEther(String(data[i][3]));
             const owner = String(data[i][2]);
   
@@ -144,7 +182,7 @@ const MinmartDashboard = () => {
           }
           catch(err){
             console.log(err);
-            setErrorNFTs(oldArray=>[...oldArray,{tokenId, contractAdd, i}]);
+            // setErrorNFTs(oldArray=>[...oldArray,{tokenId, contractAdd, i}]);
           }
 
 
@@ -235,6 +273,12 @@ async function unList(item) {
   }
 }
 
+const handleFileChange = async (e) => {
+  if (e.target.files && e.target.files.length > 0) {
+      setProfileImg(e.target.files[0]);
+  }
+};
+
 useEffect(()=>{
   displayListedNFTs()
 },[])
@@ -261,13 +305,25 @@ useEffect(()=>{
             <input onChange={handlePrice} value={price} type="number" min={0} className='px-4 h-12 w-full rounded-lg bg-white text-lg border-2 border-black' />
           </div>
 
-          <button onClick={approval} className={`bg-green-500 border-2 border-black hover:bg-green-600 ${loading && "animate-spin"} duration-300 rounded-2xl px-6 py-3 text-3xl mx-auto font-bold`}>List</button>
+          <div>
+                      <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-48 h-48 border-2 border-jel-gray-3 border-dashed rounded-full cursor-pointer hover:bg-jel-gray-1">
+                          <div className="flex flex-col items-center h-full w-full p-2 overflow-hidden justify-center rounded-lg">
+                              {!profileImg ? <svg className="w-8 h-8 text-jel-gray-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                              </svg> :
+                                  <Image alt="hello" className='w-full h-full object-cover rounded-full hover:scale-110 hover:opacity-30 duration-300' width={1000} height={1000} src={!profileImg ? "" : (profileImg instanceof File ? URL.createObjectURL(profileImg) : profileImg)} />}
+                          </div>
+                          <input id="dropzone-file" type="file" accept='image/*' onChange={handleFileChange} className="hidden" />
+                      </label>
+                  </div>
+
+          <button onClick={handleSubmit} className={`bg-green-500 border-2 border-black hover:bg-green-600 ${loading && "animate-spin"} duration-300 rounded-2xl px-6 py-3 text-3xl mx-auto font-bold`}>List</button>
       </div>
 
 
        </div>
 
-       <div className='text-center text-3xl font-bold my-10'>
+       {/* <div className='text-center text-3xl font-bold my-10'>
         <h1>Faulty Lists: </h1>
         <div className='flex flex-row flex-wrap mx-auto item-center justify-center'>
 
@@ -279,7 +335,7 @@ useEffect(()=>{
               </div>
           ))}
         </div>
-       </div>
+       </div> */}
 
        <div className='mt-10'>
        <h1 className="font-bold text-4xl mb-10 text-center ">Currently Listed:</h1>
