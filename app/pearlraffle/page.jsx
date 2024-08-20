@@ -275,7 +275,7 @@ const RaffleDashBoard = () => {
 
 const RaffleComp = ({data}) => {
   const {address} = useAccount();
-  const raffleAdd = "0xB55fe6F51E47a691173879A7d47d4F71Ec80a73B";
+  const raffleAdd = "0x0059C6C24D363a063002754a4A8f2217D29B453F";
 
   const[contractAdd, setContractAdd] = useState("");
   const[tokenId, setTokenId] = useState(null);
